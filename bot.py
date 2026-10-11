@@ -5,41 +5,49 @@ from telegram import Update
 from telegram.ext import Application, ChatJoinRequestHandler, ContextTypes
 
 # --- Configuration (Loaded from Environment Variables) ---
-# Make sure you set these in your Render Dashboard under "Environment"
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1001234567890")) 
 
-# The message to send to users when they request to join
-WELCOME_MESSAGE = """
-Welcome to the channel! 🎉
+# ---> YOUR CHANNEL ID <---
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003757455410")) 
 
-To get started, please read the pinned message and follow the rules.
+# ---> YOUR DIRECT IMAGE URL <---
+IMAGE_URL = "https://i.imgur.com/7aslkfT.jpeg"
 
-If you have any questions, feel free to ask.
-"""
+# The new welcome message
+WELCOME_MESSAGE = """There are many large orders—grab them now! 🔥🔥🔥 The selling super fast 🔤🔤
+
+OFFICIAL LINK : https://wallet.paisa-base.com/register?inviteCode=phar6p
+
+🔤🔤 Please check your account balance first. If there is a balance but no sales, check your UPI tools. 
+
+🛍Don’t always wait to sell your entire balance before buying. Once the token drops below 🤩🤩🤩🤩  Rupees, please buy it immediately! Keep it above 🤩🤩🤩🤩  Rupees and always to sell quickly!🏷🏷🏷
+
+👑Contact :@jetlee261"""
 
 # --- Enable logging ---
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
-# Set higher logging level for httpx to avoid all GET and POST requests being logged
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
 # --- Handler for Chat Join Requests ---
 async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Sends a message to the user when they request to join the channel."""
+    """Sends a message with an image to the user when they request to join."""
     join_request = update.chat_join_request
     user_id = join_request.from_user.id
 
     try:
-        # Send the welcome message privately to the user
-        await context.bot.send_message(chat_id=user_id, text=WELCOME_MESSAGE)
-        logger.info(f"Sent welcome message to user {user_id}")
+        # Send the welcome message with the image
+        await context.bot.send_photo(
+            chat_id=user_id,
+            photo=IMAGE_URL,
+            caption=WELCOME_MESSAGE
+        )
+        logger.info(f"Sent welcome message with image to user {user_id}")
 
-        # Optional: Automatically approve the join request
-        # If you want to manually approve users, comment out the next line
+        # Automatically approve the join request
         await join_request.approve()
         logger.info(f"Approved join request for user {user_id}")
 
@@ -50,7 +58,6 @@ def main() -> None:
     """Start the bot."""
     
     # --- Python 3.12+ Event Loop Workaround ---
-    # Render uses Python 3.14 which requires an explicitly set event loop.
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -58,13 +65,9 @@ def main() -> None:
         asyncio.set_event_loop(loop)
     # ------------------------------------------
 
-    # Create the Application and pass it your bot's token.
     application = Application.builder().token(BOT_TOKEN).build()
-
-    # Register the handler for chat join requests
     application.add_handler(ChatJoinRequestHandler(handle_join_request, chat_id=CHANNEL_ID))
 
-    # Run the bot until the user presses Ctrl-C
     logger.info("Bot is starting as a background worker...")
     application.run_polling()
 
